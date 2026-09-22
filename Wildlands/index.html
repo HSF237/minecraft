@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#293d2c">
+  <title>Wildlands — A world worth getting lost in</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="world" aria-label="Wildlands voxel sandbox world"></canvas>
+  <div id="menu" class="menu-screen">
+    <header class="menu-header">
+      <a class="wordmark" href="#" aria-label="Wildlands home"><span class="mark">W<span>·</span></span><span>WILDLANDS</span></a>
+      <div class="offline"><span class="status-dot"></span> OFFLINE <span class="nav-divider"></span> YOUR WORLD, YOUR RULES</div>
+    </header>
+    <main class="menu-content">
+      <div class="eyebrow"><span class="eyebrow-line"></span> AN OPEN WORLD. AN OPEN MIND.</div>
+      <h1>WILD<span>LANDS</span><sup>01</sup></h1>
+      <p class="tagline">A world worth getting lost in.</p>
+      <p class="intro">Beyond the familiar, something is waiting.<br>Explore, build, and make this little wilderness your own.</p>
+      <div class="world-options">
+        <div class="mode-control" role="group" aria-label="Game mode">
+          <button class="mode-button active" data-mode="creative" aria-pressed="true">Creative <span>∞</span></button>
+          <button class="mode-button" data-mode="survival" aria-pressed="false">Survival <span>♡</span></button>
+        </div>
+        <p class="mode-description" id="mode-description">Endless blocks. No limits. Just your imagination.</p>
+        <label class="seed-field"><span>WORLD SEED</span><input id="seed" type="text" value="wildlands" maxlength="64" autocomplete="off" spellcheck="false" aria-label="World seed"><button id="random-seed" type="button" aria-label="Generate a random world seed" title="A fresh starting point">↻</button></label>
+        <button id="enter-world" class="primary-button enter-button" disabled><span>Enter world</span><span class="button-arrow">↗</span></button>
+        <div class="menu-secondary"><button id="menu-new">New world</button><span>·</span><button id="menu-controls">How to play</button><span>·</span><button id="menu-settings">Settings</button></div>
+      </div>
+      <div class="loading-status" id="loading-status"><span class="loading-track"><i id="loading-bar"></i></span><span id="loading-label">Preparing your little wilderness…</span></div>
+    </main>
+    <div class="vista-caption"><div class="compass-icon">✧<span>N</span></div><div><span class="small-label">SOMEWHERE, ALL YOUR OWN</span><p>Take the scenic route.</p></div></div>
+    <footer class="menu-footer"><span>A SMALL WORLD OF ENDLESS POSSIBILITY</span><span>HANDCRAFTED <i>•</i> NO DOWNLOADS <i>•</i> JUST PLAY</span><span class="version">EST. 2026 <i>↗</i></span></footer>
+  </div>
+
+  <div id="hud" class="hud hidden" aria-live="off">
+    <div class="hud-top"><div class="hud-brand"><span class="mark small">W<span>·</span></span><div><span id="hud-biome">THE WILDLANDS</span><small id="hud-coordinates">0 / 0 / 0</small></div></div><div class="hud-weather"><span id="hud-time">DAY 1 · MORNING</span><span id="hud-flying" class="hidden">FLYING</span><button id="hud-pause" title="Pause (Esc)" aria-label="Pause game">Ⅱ</button></div></div>
+    <div id="crosshair" class="crosshair"><i></i><i></i></div>
+    <div id="target-label" class="target-label"></div>
+    <div class="hotbar-wrap"><div id="vitals" class="vitals hidden"><div id="health" aria-label="Health"></div><div id="hunger" aria-label="Hunger"></div></div><div id="selected-name" class="selected-name">Grass</div><div id="hotbar" class="hotbar" aria-label="Hotbar"></div><div class="hotbar-caption"><span id="hud-mode">CREATIVE</span><i>·</i><span><kbd>E</kbd> INVENTORY</span></div></div>
+    <div class="play-hints"><div><kbd>LMB</kbd> Mine <span>·</span> <kbd>RMB</kbd> Place</div><div><kbd>F</kbd> Fly <span>·</span> <kbd>M</kbd> Photo mode</div></div>
+    <div id="save-status" class="save-status"><span class="status-dot"></span><span>All yours. Saved locally.</span></div>
+    <div id="photo-label" class="photo-label hidden">PHOTO MODE <span>Press M to return</span></div>
+  </div>
+
+  <div id="pause-overlay" class="overlay hidden">
+    <section class="panel pause-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <span class="panel-kicker">TAKE A BREATHER</span><h2 id="pause-title">The world can wait.</h2><p class="panel-subtitle">Your next adventure is right where you left it.</p>
+      <button id="resume-world" class="primary-button"><span>Back to the wild</span><span class="button-arrow">↗</span></button>
+      <div class="pause-links"><button id="pause-inventory">Inventory <span>E</span></button><button id="pause-settings">Settings <span>↗</span></button><button id="pause-controls">How to play <span>?</span></button><button id="save-world">Save world <span>↓</span></button></div>
+      <div class="save-actions"><button id="export-world">Export save</button><button id="import-world">Import save</button></div>
+      <button id="back-menu" class="text-button">Save & return to title</button><small class="local-note">Your world lives in this browser. Export a copy to keep it.</small>
+    </section>
+  </div>
+
+  <div id="inventory-overlay" class="overlay hidden">
+    <section class="panel inventory-panel" role="dialog" aria-modal="true" aria-labelledby="inventory-title">
+      <div class="panel-heading"><div><span class="panel-kicker">A LITTLE OF EVERYTHING</span><h2 id="inventory-title">Make it your own.</h2></div><button class="close-button" data-close="inventory" aria-label="Close inventory">×</button></div>
+      <div class="inventory-toolbar"><div class="inventory-tabs"><button id="blocks-tab" class="active">Blocks</button><button id="crafting-tab">Crafting</button></div><span id="inventory-hint">Pick a block for your selected slot</span></div>
+      <div id="block-grid" class="block-grid"></div><div id="recipe-grid" class="recipe-grid hidden"></div>
+      <div id="inventory-food" class="inventory-food hidden"><span id="berry-count">Foraged berries · 3</span><button id="eat-berries">Eat berries <kbd>R</kbd></button></div>
+      <div class="inventory-footer"><span><kbd>1–9</kbd> Select slot <span>·</span> <kbd>E</kbd> Back to world</span><span id="inventory-mode">CREATIVE INVENTORY</span></div>
+    </section>
+  </div>
+
+  <div id="settings-overlay" class="overlay hidden">
+    <section class="panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="panel-heading"><div><span class="panel-kicker">JUST THE WAY YOU LIKE IT</span><h2 id="settings-title">Find your balance.</h2></div><button class="close-button" data-close="settings" aria-label="Close settings">×</button></div>
+      <div class="setting"><div><label for="renderDistance">View distance</label><p>How far your wilderness stretches.</p></div><output id="renderDistance-value">5 chunks</output><input id="renderDistance" data-setting="renderDistance" type="range" min="3" max="8" step="1" value="5"></div>
+      <div class="setting"><div><label for="quality">Graphics quality</label><p>A little extra clarity, or a few more frames.</p></div><output id="quality-value">High</output><select id="quality" data-setting="quality"><option value="low">Low · smoothest performance</option><option value="medium">Medium · balanced</option><option value="high" selected>High · full detail</option></select></div>
+      <div class="setting"><div><label for="sensitivity">Mouse sensitivity</label><p>Find a pace that feels natural.</p></div><output id="sensitivity-value">50%</output><input id="sensitivity" data-setting="sensitivity" type="range" min="0.25" max="2" step="0.05" value="1"></div>
+      <div class="setting"><div><label for="volume">Sound</label><p>The small sounds of making something.</p></div><output id="volume-value">50%</output><input id="volume" data-setting="volume" type="range" min="0" max="1" step="0.05" value="0.5"></div>
+      <button class="primary-button" data-close="settings">Looks good <span class="button-arrow">✓</span></button>
+    </section>
+  </div>
+
+  <div id="controls-overlay" class="overlay hidden">
+    <section class="panel controls-panel" role="dialog" aria-modal="true" aria-labelledby="controls-title">
+      <div class="panel-heading"><div><span class="panel-kicker">A FEW THINGS BEFORE YOU GO</span><h2 id="controls-title">Follow your curiosity.</h2></div><button class="close-button" data-close="controls" aria-label="Close controls">×</button></div>
+      <div class="control-grid"><div><span>Explore</span><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></div><div><span>Look around</span><kbd>Mouse</kbd></div><div><span>Jump / fly up</span><kbd>Space</kbd></div><div><span>Sprint</span><kbd>Shift</kbd></div><div><span>Mine a block</span><kbd>Left click</kbd></div><div><span>Place a block</span><kbd>Right click</kbd></div><div><span>Choose a slot</span><kbd>1–9 / Scroll</kbd></div><div><span>Inventory & crafting</span><kbd>E</kbd></div><div><span>Toggle flight · Creative</span><kbd>F</kbd></div><div><span>Fly down</span><kbd>Ctrl</kbd></div><div><span>Photo mode</span><kbd>M</kbd></div><div><span>Pause / release mouse</span><kbd>Esc</kbd></div></div>
+      <div class="controls-tip"><span>✧</span><p><strong>Start with a little shelter.</strong> In Survival, gather logs, craft planks, and build yourself a place to call home. Break leaves to find berries; press <kbd>R</kbd> to eat. Creative gives you every block and the freedom to fly. A keyboard and mouse are recommended.</p></div>
+      <button class="primary-button" data-close="controls">Let’s wander <span class="button-arrow">↗</span></button>
+    </section>
+  </div>
+
+  <div id="confirm-overlay" class="overlay hidden"><section class="panel confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirm-title"><span class="panel-kicker">A FRESH START</span><h2 id="confirm-title">Somewhere new?</h2><p id="confirm-description" class="panel-subtitle">Starting a new world replaces the world saved in this browser. Export your current world first if you’d like to keep it.</p><div class="confirm-actions"><button id="confirm-cancel" class="secondary-button">Stay here</button><button id="confirm-yes" class="primary-button">New adventure ↗</button></div></section></div>
+  <input id="import-file" class="hidden" type="file" accept=".json,application/json">
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+  <noscript><div class="noscript">Wildlands needs JavaScript enabled to bring your world to life.</div></noscript>
+  <script src="world.js"></script>
+  <script src="fauna.js"></script>
+  <script src="renderer.js"></script>
+  <script src="game.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
